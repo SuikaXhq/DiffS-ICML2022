@@ -1,0 +1,6 @@
+data/
+real_data/
+results/
+*.pdf
+*.png
+*.txt
