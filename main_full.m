@@ -10,18 +10,38 @@ elseif strcmp(method, 'kmeans')
     method = 3;
 elseif strcmp(method, 'kmeans-open')
     method = 4;
+elseif strcmp(method, 'MeTaG')
+    method = 5;
+elseif strcmp(method, 'CMTL')
+    method = 6;
+elseif strcmp(method, 'raw-GLS')
+    method = 7;
+elseif strcmp(method, 'raw-diff')
+    method = 8;
+elseif strcmp(method, 'raw-GLS-test')
+    method = 9;
 end
-method_number = 4;
+method_number = 9;
 method_name = cell(1,method_number);
 method_name{1} = 'DISHES';
 method_name{2} = 'CD';
 method_name{3} = 'kmeans';
 method_name{4} = 'kmeans-open';
+method_name{5} = 'MeTaG';
+method_name{6} = 'CMTL';
+method_name{7} = 'raw-GLS';
+method_name{8} = 'raw-Diff';
+method_name{9} = 'raw-GLS-test';
 method_case_idx = cell(1,method_number);
 method_case_idx{1} = 1:18;
-method_case_idx{2} = [1:3, 7:11, 14:15];
+method_case_idx{2} = [14,11,15,3];
 method_case_idx{3} = 1:18;
 method_case_idx{4} = 1:18;
+method_case_idx{5} = [2,4,5,10,12,14,16,17];
+method_case_idx{6} = 1:18;
+method_case_idx{7} = 1:18;
+method_case_idx{8} = 1:18;
+method_case_idx{9} = 1:18;
 if is_demo==true
     for i=1:method_number
         method_case_idx{i} = 0;
@@ -29,10 +49,15 @@ if is_demo==true
 end
 
 method_rep = cell(1,method_number);
-method_rep{1} = 10;
+method_rep{1} = 20;
 method_rep{2} = 10;
-method_rep{3} = 10;
-method_rep{4} = 10;
+method_rep{3} = 20;
+method_rep{4} = 20;
+method_rep{5} = 20;
+method_rep{6} = 20;
+method_rep{7} = 20;
+method_rep{8} = 20;
+method_rep{9} = 20;
 if is_demo==true
     for i=1:method_number
         method_rep{i} = 4;
@@ -76,11 +101,24 @@ for j = 1:method_rep{method}
             [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}, ~, timecost_full(j)] = kmeans(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U, W);
         case 4
             [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}, ~, timecost_full(j)] = kmeans(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U, W, size(subgroup_full{j},2));
+        case 5
+            [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}, timecost_full(j)] = MeTaG(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U);
+        case 6
+            [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}, timecost_full(j)] = CMTL(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U, beta_U, W);
+        case 7
+            [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}] = GLS(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U, beta_U, W);
+        case 8
+            [beta_est_full{j}, alpha_est_full{j}, theta_est_full{j}, subgroup_est{j}, timecost_full(j)] = raw_diff(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, 0.001, theta_U, W, Sigma_big);
+        case 9
+            [beta_est_full{j}, ~, ~, ~] = GLS(X_full{j}, Z_full{j}, Y_full{j}, train_idx_full{j}, valid_idx_full{j}, theta_U, beta_U, W);
+            theta_est_full{j} = theta_U;
     end
-    subgroup_est{j} = recover_full_index(subgroup_est{j}, train_idx_full{j}); % recover the train set index into full data set index
-    [subgroup_est{j}, theta_est_full{j}] = estimate_groups(subgroup_est{j}, alpha_est_full{j}, theta_U);
-    S_est_full(j) = size(subgroup_est{j},2);
-    [NMI_full(j), perfect_full(j)] = nmi(subgroup_full{j}, subgroup_est{j});
+    if method ~= 9
+        subgroup_est{j} = recover_full_index(subgroup_est{j}, train_idx_full{j}); % recover the train set index into full data set index
+        [subgroup_est{j}, theta_est_full{j}] = estimate_groups(subgroup_est{j}, alpha_est_full{j}, theta_U);
+        S_est_full(j) = size(subgroup_est{j},2);
+        [NMI_full(j), perfect_full(j)] = nmi(subgroup_full{j}, subgroup_est{j});
+    end
     RMSE_beta_full(j) = rmse(beta_est_full{j}, beta_full{j});
     RMSE_theta_full(j) = rmse(theta_est_full{j}, theta_full{j}, test_idx_full{j});
     if S_est_full(j) == size(alpha_full{j}, 1)

@@ -87,6 +87,6 @@ p = p(case_number);
 q = q(case_number);
 
 
-generate_data(M,S,n,p,q,case_number,10);
+generate_data(M,S,n,p,q,case_number,20);
 
 end

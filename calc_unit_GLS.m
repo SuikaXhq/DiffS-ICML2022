@@ -1,5 +1,5 @@
 for case_number = 1:18
-    rep = 10;
+    rep = 20;
     if is_demo==true
         case_number=0;
         rep = 4;

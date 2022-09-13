@@ -77,12 +77,16 @@ theta_K = zeros(M, q);
 if nargin >= 8
     K_list = real_K;
 else
-    K_list = 1:M;
+    if M > 10
+        K_list = 1:5;
+    else
+        K_list = 1:M;
+    end
 end
 tic;
 for K=K_list
     % initial
-%     fprintf('K = %d\n',K);
+    fprintf('K = %d\n',K);
     centroids = theta_check(randperm(M,K),:);
     subgroup = zeros(1,M);
     dist = zeros(1,K);
